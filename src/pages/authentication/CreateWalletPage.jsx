@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 function CreateWalletPage() {
-  const totalWords = 12;
+  const totalWords = 24;
   const [recoveryPhrase, setRecoveryPhrase] = useState([]);
   const [copied, setCopied] = useState(false);
   const [step, setStep] = useState(1);
@@ -64,7 +64,7 @@ function CreateWalletPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Create Wallet</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-6 select-none">Create Wallet</h1>
       <div className="bg-white p-6 rounded-lg shadow-md mb-6">
         <h2 className="text-center select-none">Step {step} of 3:</h2>
         <div>

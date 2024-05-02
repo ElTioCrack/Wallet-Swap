@@ -7,7 +7,7 @@ import AuthProvider from "./auth/AuthProvider.jsx";
 import App from "./App.jsx";
 import NotFoundPage from "./pages/NotFoundPage.jsx";
 import CreateWalletPage from "./pages/authentication/CreateWalletPage.jsx";
-import RegisterPage from "./pages/authentication/RegisterPage.jsx";
+import AccessWalletPage from "./pages/authentication/AccessWalletPage.jsx";
 import HelloWorldPage from "./pages/HelloWordPage.jsx";
 
 import "./index.css";
@@ -15,6 +15,14 @@ import Example from "./pages/Example.jsx";
 import Component from "./pages/component.jsx";
 
 const route = createBrowserRouter([
+  {
+    path: "/example",
+    element: <Example />,
+  },
+  {
+    path: "/component",
+    element: <Component />,
+  },
   {
     path: "/helloworld",
     element: <HelloWorldPage />,
@@ -28,20 +36,12 @@ const route = createBrowserRouter([
     element: <App />,
   },
   {
-    path: "/example",
-    element: <Example />,
-  },
-  {
-    path: "/component",
-    element: <Component />,
-  },
-  {
     path: "/createwallet",
     element: <CreateWalletPage />,
   },
   {
-    path: "/register",
-    element: <RegisterPage />,
+    path: "/accesswallet",
+    element: <AccessWalletPage />,
   },
   // {
   //   path: "/",
