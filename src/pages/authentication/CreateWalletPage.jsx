@@ -1,11 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 
+import PasswordInput from "../../components/inputs/PasswordInput";
+
 function CreateWalletPage() {
-  const totalWords = 24;
+  const totalWords = 12;
   const [recoveryPhrase, setRecoveryPhrase] = useState([]);
   const [copied, setCopied] = useState(false);
   const [step, setStep] = useState(1);
+  const passwordRef = useRef(null);
+  const confirmPasswordRef = useRef(null);
 
   useEffect(() => {
     generateRecoveryPhrase();
@@ -47,6 +51,18 @@ function CreateWalletPage() {
       .catch((error) => console.error("Error copying to clipboard:", error));
   };
 
+  const pasteToClipboard = () => {
+    navigator.clipboard.readText().then((text) => {
+      const words = text.split(" ");
+      const inputs = document.querySelectorAll('input[type="text"]');
+      inputs.forEach((input, index) => {
+        if (words[index]) {
+          input.value = words[index];
+        }
+      });
+    });
+  };
+
   const downloadRecoveryPhrase = () => {
     const phraseToDownload = recoveryPhrase.join(" ");
     const element = document.createElement("a");
@@ -57,63 +73,236 @@ function CreateWalletPage() {
     element.click();
   };
 
-  const handleConfirm = () => {
-    alert("Recovery phrase confirmed:", recoveryPhrase);
-    console.log("Recovery phrase confirmed:", recoveryPhrase);
+  const uploadRecoveryPhrase = (event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target.result;
+      const words = text.split(" ");
+      const inputs = document.querySelectorAll('input[type="text"]');
+      inputs.forEach((input, index) => {
+        if (words[index]) {
+          input.value = words[index];
+        }
+      });
+    };
+    reader.readAsText(file);
+  };
+
+  const handlePrevious = () => {
+    setStep(step - 1);
+  };
+
+  const handleNext = () => {
+    setCopied(false);
+    setStep(step + 1);
+  };
+
+  const compareInputs = () => {
+    const inputs = document.querySelectorAll('input[type="text"]');
+    const userWords = Array.from(inputs).map((input) => input.value);
+
+    const match = userWords.every(
+      (word, index) => word === recoveryPhrase[index]
+    );
+
+    if (match) {
+      setStep(step + 1);
+    } else {
+      alert("Las palabras no coinciden con la frase de recuperación.");
+    }
+  };
+
+  const compareValues = () => {
+    const passwordValue = passwordRef.current.getValue();
+    const confirmPasswordValue = confirmPasswordRef.current.getValue();
+
+    if (passwordValue === confirmPasswordValue) {
+      alert("Passwords match!");
+    } else {
+      alert("Passwords do not match!");
+    }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6 select-none">Create Wallet</h1>
-      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-        <h2 className="text-center select-none">Step {step} of 3:</h2>
-        <div>
-          <p className="text-gray-700 mb-4 select-none">
-            Write down your recovery phrase. You'll need it in the next step.
-          </p>
+    <main className="min-h-screen flex flex-col justify-center items-center bg-gray-100">
+      <div
+        className=" my-6 p-6 rounded-xl shadow-md bg-white"
+        style={{ width: "400px" }}
+      >
+        <h1 className="text-center rounded-xl text-4xl font-bold select-none">
+          Create Wallet
+        </h1>
+        <h2 className="my-3 text-center text-2xl font-bold select-none">
+          Step {step} of 3:
+        </h2>
 
-          <div className="bg-gray-200 p-4 rounded-md mb-4 grid grid-cols-3 gap-4 ">
-            {recoveryPhrase.map((word, index) => (
-              <div key={index} className="flex text-sm text-gray-600">
-                <p className="select-none">{index + 1}.&nbsp;</p>
-                <p>{word}</p>
-              </div>
-            ))}
-          </div>
+        {/* Start div cambiante */}
+        {step === 1 && (
+          <>
+            <p className="text-center select-none">
+              Write down your recovery phrase. You'll need it in the next step.
+            </p>
 
-          <div className="select-none">
-            <div className="flex justify-center my-3">
+            <div className="my-3 p-4 flex flex-col justify-center rounded-md bg-gray-200">
               <button
-                className="text-sm font-semibold text-indigo-600 border border-indigo-600 hover:text-indigo-800 hover:border-indigo-800 py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className="p-2 border border-indigo-600 rounded-xl font-semibold select-none text-indigo-600 hover:text-indigo-800"
                 onClick={generateRecoveryPhrase}
               >
                 Generate New Recovery Phrase
               </button>
+              <hr className="border-t-2 border-white my-4" />
+
+              <div className="grid grid-cols-3 gap-3">
+                {recoveryPhrase.map((word, index) => (
+                  <div className="flex">
+                    <p className="select-none">{index + 1}.&nbsp;</p>
+                    <p className="font-semibold">{word}</p>
+                  </div>
+                ))}
+              </div>
+
+              <hr className="border-t-2 border-white my-4" />
+
+              <div className="col-span-3 flex justify-around select-none">
+                <button
+                  className="font-bold p-2 rounded-md border border-white bg-indigo-100 hover:bg-indigo-300 text-indigo-600"
+                  style={{ width: "120px" }}
+                  onClick={copyToClipboard}
+                >
+                  {copied ? "Copied" : "Copy Phrase"}
+                </button>
+                <button
+                  className="font-bold p-2 rounded-md border border-white bg-indigo-100 hover:bg-indigo-300 text-indigo-600"
+                  style={{ width: "120px" }}
+                  onClick={downloadRecoveryPhrase}
+                >
+                  Download
+                </button>
+              </div>
             </div>
-            <div className="flex justify-between items-center mb-4">
+
+            <div className="mt-2 flex justify-evenly select-nsone bg-white">
+              <Link className="p-2 rounded-xl border border-indigo-500" to="/">
+                Back
+              </Link>
               <button
-                className="bg-indigo-100 text-indigo-600 font-bold py-2 px-4 rounded-md mr-2 focus:outline-none hover:bg-indigo-300"
-                onClick={copyToClipboard}
-                style={{ width: "130px" }}
+                className="p-2 rounded-xl bg-indigo-500 text-white"
+                onClick={handleNext}
               >
-                {copied ? "Copied" : "Copy Phrase"}
+                Next Step
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === 2 && (
+          <>
+            <p className="text-center select-none">
+              Confirm your recovery phrase This is to verify that you have the
+              recovery phrase in a safe place
+            </p>
+
+            <div className="my-3 p-4 flex flex-col justify-center rounded-md bg-gray-200">
+              <div className="col-span-3 flex justify-around select-none">
+                <button
+                  className="font-bold p-2 rounded-md border border-white bg-indigo-100 hover:bg-indigo-300 text-indigo-600"
+                  style={{ width: "120px" }}
+                  onClick={pasteToClipboard}
+                >
+                  Paste Phrase
+                </button>
+                <label
+                  className="p-2 font-bold text-center rounded-md border border-white bg-indigo-100 hover:bg-indigo-300 text-indigo-600"
+                  style={{ width: "120px" }}
+                  htmlFor="fileInput"
+                >
+                  Upload
+                </label>
+                <input
+                  id="fileInput"
+                  type="file"
+                  className="hidden"
+                  onChange={uploadRecoveryPhrase}
+                />
+              </div>
+
+              <hr className="border-t-2 border-white my-4" />
+
+              <div className="grid grid-cols-3 gap-2">
+                {Array.from({ length: totalWords }).map((_, index) => (
+                  <div key={index} className="flex justify-between">
+                    <label
+                      htmlFor={`word-${index + 1}`}
+                      className="w-8 select-none"
+                    >
+                      {index + 1}.
+                    </label>
+                    <input
+                      type="text"
+                      id={`word-${index + 1}`}
+                      className=" p-1 font-semibold border-b border-gray-400 focus:outline-none focus:border-indigo-500 w-full"
+                      placeholder={`Word ${index + 1}`}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-2 flex justify-evenly select-nsone bg-white">
+              <button
+                className="p-2 rounded-xl border border-indigo-500"
+                onClick={handlePrevious}
+              >
+                Back
               </button>
               <button
-                className="bg-indigo-100 text-indigo-600 font-bold py-2 px-4 rounded-md mr-2 focus:outline-none hover:bg-indigo-300"
-                onClick={downloadRecoveryPhrase}
-                style={{ width: "130px" }}
+                className="p-2 rounded-xl bg-indigo-500 text-white"
+                onClick={compareInputs}
               >
-                Download
+                Next Step
               </button>
             </div>
-          </div>
-        </div>
-        <button
-          className="bg-indigo-500 text-white font-bold py-2 px-4 rounded-md w-full focus:outline-none hover:bg-indigo-800 select-none"
-          onClick={handleConfirm}
-        >
-          Confirm
-        </button>
+          </>
+        )}
+
+        {step === 3 && (
+          <>
+            <p className="text-center select-none">
+              Set a passcode for your wallet
+            </p>
+
+            <div className="my-3 p-4 flex flex-col justify-center rounded-md bg-gray-200">
+              <PasswordInput
+                ref={passwordRef}
+                label="Password"
+                placeholder="Enter your password"
+                validateRegex={true}
+              />
+              <PasswordInput
+                ref={confirmPasswordRef}
+                label="Confirm Password"
+                placeholder="Confirm your password"
+              />
+            </div>
+
+            <div className="mt-2 flex justify-evenly select-nsone bg-white">
+              <button
+                className="p-2 rounded-xl border border-indigo-500"
+                onClick={handlePrevious}
+              >
+                Back
+              </button>
+              <button
+                className="p-2 rounded-xl bg-indigo-500 text-white"
+                onClick={compareValues}
+              >
+                Create Wallet
+              </button>
+            </div>
+          </>
+        )}
+        {/* End div cambiante */}
       </div>
 
       <div className="select-none">
@@ -125,7 +314,7 @@ function CreateWalletPage() {
           Access it here
         </Link>
       </div>
-    </div>
+    </main>
   );
 }
 
