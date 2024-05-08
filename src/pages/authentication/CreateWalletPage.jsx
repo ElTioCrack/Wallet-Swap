@@ -1,15 +1,21 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import PasswordInput from "../../components/inputs/PasswordInput";
 
+import CreateWalletService from "../../services/authentication/WalletCreationService";
+
 function CreateWalletPage() {
+  const navigate = useNavigate();
+
+  const [step, setStep] = useState(1);
   const totalWords = 12;
   const [recoveryPhrase, setRecoveryPhrase] = useState([]);
   const [copied, setCopied] = useState(false);
-  const [step, setStep] = useState(1);
   const passwordRef = useRef(null);
   const confirmPasswordRef = useRef(null);
+  const [isPasswordValid, setIsPasswordValid] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     generateRecoveryPhrase();
@@ -63,6 +69,19 @@ function CreateWalletPage() {
     });
   };
 
+  const handlePaste = (event) => {
+    const clipboardData = event.clipboardData || window.clipboardData;
+    const pastedText = clipboardData.getData("text");
+    const words = pastedText.split(" ");
+    const inputs = document.querySelectorAll('input[type="text"]');
+    inputs.forEach((input, index) => {
+      if (words[index]) {
+        input.value = words[index];
+      }
+    });
+    event.preventDefault();
+  };
+
   const downloadRecoveryPhrase = () => {
     const phraseToDownload = recoveryPhrase.join(" ");
     const element = document.createElement("a");
@@ -90,6 +109,7 @@ function CreateWalletPage() {
   };
 
   const handlePrevious = () => {
+    setErrorMessage("");
     setStep(step - 1);
   };
 
@@ -107,20 +127,61 @@ function CreateWalletPage() {
     );
 
     if (match) {
+      setErrorMessage("");
       setStep(step + 1);
     } else {
-      alert("Las palabras no coinciden con la frase de recuperación.");
+      setErrorMessage(
+        "Las palabras no coinciden con la frase de recuperación."
+      );
     }
   };
 
-  const compareValues = () => {
+  const checkPasswordsOnKeyPress = (e) => {
+    const passwordValue = passwordRef.current.getValue();
+
+    if (passwordValue === e) {
+      setErrorMessage("");
+    } else {
+      setErrorMessage("Passwords do not match!");
+    }
+  };
+
+  const arePasswordsValid = () => {
+    const isPasswordValid = passwordRef.current.isPasswordValid();
     const passwordValue = passwordRef.current.getValue();
     const confirmPasswordValue = confirmPasswordRef.current.getValue();
 
-    if (passwordValue === confirmPasswordValue) {
-      alert("Passwords match!");
-    } else {
-      alert("Passwords do not match!");
+    if (!isPasswordValid) {
+      setErrorMessage("Password is not valid!");
+      return false;
+    }
+
+    if (passwordValue !== confirmPasswordValue) {
+      setErrorMessage("Passwords do not match!");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleCreateWallet = async () => {
+    try {
+      if (!arePasswordsValid()) return;
+
+      const password = passwordRef.current.getValue();
+
+      const walletData = {
+        /* Datos de la billetera */
+        password,
+      };
+      const response = await CreateWalletService(walletData);
+
+      if (response.success) {
+        navigate("/wallet");
+      }
+    } catch (error) {
+      alert("Error creating wallet:");
+      console.error("Error creating wallet:", error);
     }
   };
 
@@ -155,7 +216,7 @@ function CreateWalletPage() {
 
               <div className="grid grid-cols-3 gap-3">
                 {recoveryPhrase.map((word, index) => (
-                  <div className="flex">
+                  <div key={index} className="flex">
                     <p className="select-none">{index + 1}.&nbsp;</p>
                     <p className="font-semibold">{word}</p>
                   </div>
@@ -241,12 +302,21 @@ function CreateWalletPage() {
                     <input
                       type="text"
                       id={`word-${index + 1}`}
-                      className=" p-1 font-semibold border-b border-gray-400 focus:outline-none focus:border-indigo-500 w-full"
+                      className="p-1 font-semibold border-b border-gray-400 focus:outline-none focus:border-indigo-500 w-full"
                       placeholder={`Word ${index + 1}`}
+                      onPaste={handlePaste}
+                      autoComplete="off"
+                      key={index}
                     />
                   </div>
                 ))}
               </div>
+              {errorMessage && (
+                <>
+                  <hr className="border-t-2 border-white my-4" />
+                  <p className="text-red-500">{errorMessage}</p>
+                </>
+              )}
             </div>
 
             <div className="mt-2 flex justify-evenly select-nsone bg-white">
@@ -269,39 +339,54 @@ function CreateWalletPage() {
         {step === 3 && (
           <>
             <p className="text-center select-none">
-              Set a passcode for your wallet
+              Set a password for your wallet
             </p>
 
-            <div className="my-3 p-4 flex flex-col justify-center rounded-md bg-gray-200">
-              <PasswordInput
-                ref={passwordRef}
-                label="Password"
-                placeholder="Enter your password"
-                validateRegex={true}
-              />
-              <PasswordInput
-                ref={confirmPasswordRef}
-                label="Confirm Password"
-                placeholder="Confirm your password"
-              />
-            </div>
+            <form>
+              <div className="my-3 p-4 flex flex-col justify-center rounded-md bg-gray-200">
+                <PasswordInput
+                  ref={passwordRef}
+                  id="password"
+                  label="Password"
+                  placeholder="Enter your password"
+                  validateRegex={true}
+                />
+                <PasswordInput
+                  ref={confirmPasswordRef}
+                  id="confirm-password"
+                  label="Confirm Password"
+                  placeholder="Confirm your password"
+                  onChange={checkPasswordsOnKeyPress}
+                />
 
-            <div className="mt-2 flex justify-evenly select-nsone bg-white">
-              <button
-                className="p-2 rounded-xl border border-indigo-500"
-                onClick={handlePrevious}
-              >
-                Back
-              </button>
-              <button
-                className="p-2 rounded-xl bg-indigo-500 text-white"
-                onClick={compareValues}
-              >
-                Create Wallet
-              </button>
-            </div>
+                {errorMessage && (
+                  <>
+                    <hr className="border-t-2 border-white my-4" />
+                    <p className="text-red-500">{errorMessage}</p>
+                  </>
+                )}
+              </div>
+
+              <div className="mt-2 flex justify-evenly select-nsone bg-white">
+                <button
+                  className="p-2 rounded-xl border border-indigo-500"
+                  type="button"
+                  onClick={() => setStep(1)}
+                >
+                  Back
+                </button>
+                <button
+                  className="p-2 rounded-xl bg-indigo-500 text-white"
+                  type="button"
+                  onClick={handleCreateWallet}
+                >
+                  Create Wallet
+                </button>
+              </div>
+            </form>
           </>
         )}
+
         {/* End div cambiante */}
       </div>
 

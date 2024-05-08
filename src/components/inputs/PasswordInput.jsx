@@ -1,10 +1,10 @@
 import React, { useState, forwardRef, useImperativeHandle } from "react";
 
 const PasswordInput = forwardRef(
-  ({ label, placeholder, validateRegex = false }, ref) => {
+  ({ id, label, placeholder, validateRegex = false, onChange }, ref) => {
     const [password, setPassword] = useState("");
+    const [isPasswordValid, setIsPasswordValid] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [isValid, setIsValid] = useState(true);
 
     const togglePasswordVisibility = () => {
       setShowPassword(!showPassword);
@@ -16,30 +16,36 @@ const PasswordInput = forwardRef(
 
       if (validateRegex) {
         const regex =
-          /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()-_=+{};:,<.>?]).{10,255}$/;
-        setIsValid(regex.test(value));
+          /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+{};:,<.>?]).{10,255}$/;
+
+        setIsPasswordValid(regex.test(value));
+      }
+
+      if (typeof onChange === "function") {
+        onChange(value); // Llama a la función onChange si está definida
       }
     };
 
     useImperativeHandle(ref, () => ({
       getValue: () => password,
+      isPasswordValid: () => isPasswordValid,
     }));
 
     return (
       <div className="mb-4">
-        <label
-          htmlFor="password"
-          className="block text-gray-700 font-bold mb-2"
-        >
+        <label htmlFor={id} className="block text-gray-700 font-bold mb-2">
           {label}
         </label>
         <div className="relative">
           <input
-            type={showPassword ? "text" : "password"}
-            id="password"
+            id={id}
             className={`w-full rounded-md p-2 pr-7 border ${
-              !isValid ? "border-red-500" : "border-gray-400"
+              !isPasswordValid && validateRegex
+                ? "border-red-500"
+                : "border-gray-400"
             } focus:outline-none focus:border-indigo-500`}
+            type={showPassword ? "text" : "password"}
+            autoComplete="off"
             placeholder={placeholder}
             value={password}
             onChange={handleChange}
@@ -52,7 +58,7 @@ const PasswordInput = forwardRef(
             {showPassword ? "🙉" : "🙈"}
           </button>
         </div>
-        {!isValid && (
+        {!isPasswordValid && validateRegex && (
           <p className="text-red-500 text-sm mt-1">
             Password should contain at least one uppercase letter, one lowercase
             letter, one number, one special character, and be between 10 and 255
