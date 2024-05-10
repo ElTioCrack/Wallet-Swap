@@ -1,9 +1,9 @@
 import BaseUrl from "../ApiConfig";
 import axios from "axios";
 
-const login = async (userData) => {
+const AccessWalletService = async (userData) => {
   try {
-    const response = await axios.post(`${BaseUrl}/auth/login`, userData);
+    const response = await axios.post(`${BaseUrl}/auth/AccessWalletService`, userData);
     return response.data;
   } catch (error) {
     console.error("Error logging in:", error);
@@ -11,4 +11,4 @@ const login = async (userData) => {
   }
 };
 
-export { login };
+export default AccessWalletService;
