@@ -1,7 +1,7 @@
 import AccessWalletService from "./authentication/AccessWalletService";
 import WalletCreationService from "./authentication/WalletCreationService";
 
-const getWalletInfo = async () => {
+const fetchWalletInfo = async () => {
     try {
         // Simula una solicitud exitosa para obtener información de la billetera
         const walletInfo = {
@@ -27,4 +27,4 @@ const requestNewAccessToken = async () => {
     }
 };
 
-export { WalletCreationService, AccessWalletService, getWalletInfo, requestNewAccessToken };
+export { WalletCreationService, AccessWalletService, fetchWalletInfo, requestNewAccessToken };

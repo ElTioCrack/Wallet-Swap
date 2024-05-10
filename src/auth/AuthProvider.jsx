@@ -1,6 +1,6 @@
 import React, { useContext, createContext, useState, useEffect } from "react";
 import {
-    getWalletInfo,
+    fetchWalletInfo,
     requestNewAccessToken,
 } from "../services/WalletServices.jsx";
 
@@ -25,11 +25,12 @@ const AuthProvider = ({ children }) => {
     }, []);
 
     const getWalletInfo = async () => {
-        if (walletInfo || walletInfo == "" || walletInfo == null) {
-            return walletInfo;
-        } else {
-            return await getWalletInfo();
-        }
+        return walletInfo;
+        // if (walletInfo || walletInfo == "" || walletInfo == null) {
+        //     return walletInfo;
+        // } else {
+        //     return await fetchWalletInfo();
+        // }
     };
 
     const getAccessToken = () => accessToken;
