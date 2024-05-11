@@ -1,13 +1,17 @@
 import axios from "axios";
 import ApiResponse from "../models/ApiResponse";
+import { useAuth } from "../auth/AuthProvider";
+import BaseUrl from "../ApiConfig";
 
 const endpointUrl = "walletInfo";
 
-async function fetchWalletInfo(accessToken) {
+async function fetchWalletInfo() {
+    const { getAccessToken } = useAuth();
+
     try {
-        const response = await axios.get(`${BaseUrl}${endpointUrl}`, {
+        const response = await axios.get(`${BaseUrl}/${endpointUrl}`, {
             headers: {
-                Authorization: `Bearer ${accessToken}`,
+                Authorization: `Bearer ${getAccessToken()}`,
             },
         });
 
