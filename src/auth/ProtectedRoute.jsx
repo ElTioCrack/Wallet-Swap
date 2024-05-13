@@ -1,22 +1,13 @@
-// En ProtectedRoute.tsx
-
+import React from "react";
 import { Outlet, Navigate } from "react-router-dom";
-import { UseAuth } from "./AuthProvider";
+import { useAuth } from "./AuthProvider";
 
 const ProtectedRoute = () => {
-  const { isAuthenticated, isLoading } = UseAuth();
+  const { isLoggedIn } = useAuth();
 
-  console.log(`isAuthenticated: ${isAuthenticated}`);
+  console.log(`isLoggedIn: ${isLoggedIn}`);
 
-  if (isLoading) {
-    return <p>Cargando...</p>;
-  }
-
-  if (isAuthenticated) {
-    return <Outlet />;
-  }
-
-  return <Navigate to="/login" replace />;
+  return isLoggedIn ? <Outlet /> : <Navigate to="/" replace />;
 };
 
 export default ProtectedRoute;

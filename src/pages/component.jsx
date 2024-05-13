@@ -1,37 +1,30 @@
 import React, { useState, useEffect } from "react";
+import CryptoJS from "crypto-js";
 
 function Component() {
-  const [theme, setTheme] = useState(
-    localStorage.theme ||
-      (window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light")
-  );
-
-  const toggleTheme = () => {
-    const newTheme = theme === "dark" ? "light" : "dark";
-    setTheme(newTheme);
-    localStorage.theme = newTheme;
-    document.documentElement.classList.toggle("dark", newTheme === "dark");
+  const generateWalletKeys = (mnemonic) => {
+    // Generar una clave maestra utilizando la frase mnemotécnica
+    const masterKey = CryptoJS.PBKDF2(mnemonic, "", { keySize: 512 / 32 }).toString();
+    
+    // Derivar claves públicas y privadas utilizando la clave maestra
+    // En esta implementación, se utiliza un algoritmo de derivación de claves simple para fines demostrativos
+    const publicKey = CryptoJS.SHA256(masterKey).toString();
+    const privateKey = CryptoJS.SHA256(masterKey + "private").toString();
+    
+    return { publicKey, privateKey };
   };
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-  }, [theme]);
+    const mnemonic = "your twelve word mnemonic"; // Reemplaza esto con tu frase mnemotécnica
+    
+    // Generar las claves de la wallet
+    const walletKeys = generateWalletKeys(mnemonic);
+    
+    console.log("Public Key:", walletKeys.publicKey);
+    console.log("Private Key:", walletKeys.privateKey);
+  }, []);
 
-  return (
-    <div className="lg:flex lg:justify-center">
-      <button className="focus:outline-none" onClick={toggleTheme}>
-        <div className="relative w-10 h-5 bg-gray-300 dark:bg-gray-800 rounded-full">
-          <div
-            className={`absolute left-0 top-0 w-5 h-5 bg-white dark:bg-gray-500 rounded-full transform transition-transform ${
-              theme === "dark" ? "translate-x-full" : "translate-x-0"
-            }`}
-          ></div>
-        </div>
-      </button>
-    </div>
-  );
+  return <h1>Component</h1>;
 }
 
 export default Component;

@@ -1,12 +1,24 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import { wordlists } from "bip39";
+
 import PasswordInput from "../../components/inputs/PasswordInput";
 
-import CreateWalletService from "../../services/authentication/WalletCreationService";
+import { useAuth } from "../../auth/AuthProvider";
+
+import {
+  generateSecretKey,
+  encryptData,
+  hashPassword,
+  generateWalletKeys,
+} from "../../utils/cryptoUtils.jsx";
+
+import CreateWalletService from "../../services/authentication/CreateWalletService.jsx";
 
 function CreateWalletPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [step, setStep] = useState(1);
   const totalWords = 12;
@@ -22,20 +34,22 @@ function CreateWalletPage() {
   }, []);
 
   const generateRandomPhrase = () => {
-    const phraseOptions = [
-      "apple",
-      "banana",
-      "cat",
-      "dog",
-      "elephant",
-      "fish",
-      "grape",
-      "horse",
-      "iguana",
-      "jellyfish",
-      "koala",
-      "lion",
-    ];
+    // const phraseOptions = [
+    //   "apple",
+    //   "banana",
+    //   "cat",
+    //   "dog",
+    //   "elephant",
+    //   "fish",
+    //   "grape",
+    //   "horse",
+    //   "iguana",
+    //   "jellyfish",
+    //   "koala",
+    //   "lion",
+    // ];
+
+    const phraseOptions = wordlists.english;
     const randomWords = Array.from({ length: totalWords }, () => {
       const randomIndex = Math.floor(Math.random() * phraseOptions.length);
       return phraseOptions[randomIndex];
@@ -168,17 +182,29 @@ function CreateWalletPage() {
     try {
       if (!arePasswordsValid()) return;
 
+      const mnemonic = recoveryPhrase.join(" ");
+
       const password = passwordRef.current.getValue();
 
+      const secretKey = generateSecretKey(password);
+
+      const { privateKey, publicKey } = generateWalletKeys(mnemonic);
+
       const walletData = {
-        /* Datos de la billetera */
-        password,
+        mnemonic: await encryptData(mnemonic, secretKey),
+        password: await hashPassword(password),
+        publicKey: publicKey,
       };
+      
+      console.log(walletData);
       const response = await CreateWalletService(walletData);
 
       if (response.success) {
+        console.log(response);
+        login(response.data.accessToken, response.data.refreshToken);
         navigate("/wallet");
       }
+      
     } catch (error) {
       alert("Error creating wallet:");
       console.error("Error creating wallet:", error);

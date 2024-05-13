@@ -5,11 +5,11 @@ import BaseUrl from "../ApiConfig";
 
 const endpointUrl = "walletInfo";
 
-async function fetchWalletInfo() {
+async function fetchWalletInfo(publicKey) {
     const { getAccessToken } = useAuth();
 
     try {
-        const response = await axios.get(`${BaseUrl}/${endpointUrl}`, {
+        const response = await axios.get(`${BaseUrl}/${endpointUrl}/${publicKey}`, {
             headers: {
                 Authorization: `Bearer ${getAccessToken()}`,
             },
@@ -19,7 +19,7 @@ async function fetchWalletInfo() {
         const responseData = response.data;
 
         return new ApiResponse(
-            statusCode,
+            statusCode, 
             true,
             responseData.message,
             responseData.data

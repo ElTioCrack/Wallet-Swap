@@ -2,18 +2,22 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import AuthProvider from "./auth/AuthProvider.jsx";
+import AuthProvider from "./auth/AuthProvider";
+import ProtectedRoute from "./auth/ProtectedRoute";
 
-import App from "./App.jsx";
-import NotFoundPage from "./pages/NotFoundPage.jsx";
-import CreateWalletPage from "./pages/authentication/CreateWalletPage.jsx";
-import AccessWalletPage from "./pages/authentication/AccessWalletPage.jsx";
-import HelloWorldPage from "./pages/HelloWordPage.jsx";
-import WalletPage from "./pages/authentication/WalletPage.jsx";
+import {
+  App,
+  AccessWalletPage,
+  CreateWalletPage,
+  HelloWorldPage,
+  NotFoundPage,
+  WalletPage,
+} from "./pages/MyPages";
 
 import "./index.css";
-import Example from "./pages/Example.jsx";
-import Component from "./pages/component.jsx";
+
+import Example from "./pages/Example";
+import Component from "./pages/component";
 
 const route = createBrowserRouter([
   {
@@ -46,7 +50,7 @@ const route = createBrowserRouter([
   },
   {
     path: "/wallet",
-    // element: <ProtectedRoute />,
+    element: <ProtectedRoute />,
     children: [
       {
         path: "/wallet",
