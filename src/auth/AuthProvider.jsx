@@ -58,12 +58,12 @@ const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    setIsLoggedIn(false);
-    setWalletInfo(null);
-    setAccessToken("");
-    setRefreshToken("");
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
+      setWalletInfo(null);
+      setAccessToken("");
+      setRefreshToken("");
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      setIsLoggedIn(false);
     console.log("porque? :(");
   };
 
