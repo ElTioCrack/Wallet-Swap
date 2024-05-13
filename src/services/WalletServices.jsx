@@ -1,5 +1,5 @@
 import AccessWalletService from "./authentication/AccessWalletService";
-import WalletCreationService from "./authentication/CreateWalletService";
+import CreateWalletService from "./authentication/CreateWalletService";
 import verifyAccessToken from "./authentication/verifyAccessToken.jsx";
 import verifyRefreshToken from "./authentication/verifyRefreshToken.jsx";
 import generateAccessTokenFromRefreshToken from "./authentication/generateAccessTokenFromRefreshToken.jsx";
@@ -19,7 +19,7 @@ const fetchWalletInfo = async () => {
 };
 
 export {
-  WalletCreationService,
+  CreateWalletService,
   AccessWalletService,
   verifyAccessToken,
   verifyRefreshToken,
